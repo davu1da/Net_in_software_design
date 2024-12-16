@@ -172,17 +172,10 @@ class PreprocessingTemplateViewSet(viewsets.ModelViewSet):
 
 @parser_classes([MultiPartParser, FormParser])
 class FileUploadView(APIView):
-    permission_classes = [AllowAny]  # 临时允许匿名访问，测试用
+    permission_classes = [IsAuthenticated]
     
     def post(self, request):
         try:
-            # 检查用户认证状态
-            if not request.user.is_authenticated:
-                return Response(
-                    {'message': '请先登录'},
-                    status=status.HTTP_401_UNAUTHORIZED
-                )
-
             file_obj = request.FILES['file']
             dataset = Dataset.objects.create(
                 file=file_obj,

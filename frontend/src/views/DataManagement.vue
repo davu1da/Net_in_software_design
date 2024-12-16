@@ -45,12 +45,14 @@
         </el-form-item>
         <el-form-item label="数据文件">
           <el-upload
+            class="upload-demo"
             :action="`${baseURL}/api/preprocessing/upload/`"
-            :headers="uploadHeaders"
-            :with-credentials="true"
+            :headers="headers"
+            :before-upload="beforeUpload"
             :on-success="handleUploadSuccess"
             :on-error="handleUploadError"
-            :before-upload="beforeUpload">
+            multiple
+            :limit="5">
             <el-button>选择文件</el-button>
           </el-upload>
         </el-form-item>
@@ -80,7 +82,7 @@ import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
 import { useRouter } from 'vue-router'
 
-const baseURL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000'
+const baseURL = ''  // 使用相对路径，让 Vite 代理处理
 const router = useRouter()
 
 // 状态变量
@@ -102,15 +104,17 @@ const getCsrfToken = () => {
 }
 
 // 上传请求头
-const uploadHeaders = computed(() => ({
-  'X-CSRFToken': getCsrfToken(),
-  'Authorization': `Bearer ${localStorage.getItem('token')}`
-}))
+const headers = computed(() => {
+  const token = localStorage.getItem('token')
+  return {
+    'Authorization': token ? `Bearer ${token}` : ''
+  }
+})
 
 // 上传前检查
 const beforeUpload = (file) => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'
-  if (!isAuthenticated) {
+  const token = localStorage.getItem('token')
+  if (!token) {
     ElMessage.error('请先登录')
     router.push('/login')
     return false
