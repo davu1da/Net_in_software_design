@@ -46,13 +46,14 @@
         <el-form-item label="数据文件">
           <el-upload
             class="upload-demo"
-            :action="`${baseURL}/api/preprocessing/upload/`"
+            :action="`/api/preprocessing/datasets/`"
             :headers="headers"
             :before-upload="beforeUpload"
             :on-success="handleUploadSuccess"
             :on-error="handleUploadError"
-            multiple
-            :limit="5">
+            :data="uploadForm"
+            :auto-upload="false"
+            ref="upload">
             <el-button>选择文件</el-button>
           </el-upload>
         </el-form-item>
@@ -106,8 +107,15 @@ const getCsrfToken = () => {
 // 上传请求头
 const headers = computed(() => {
   const token = localStorage.getItem('token')
+  if (!token) {
+    ElMessage.error('请先登录')
+    router.push('/login')
+    return {}
+  }
   return {
-    'Authorization': token ? `Bearer ${token}` : ''
+    'Authorization': `Bearer ${token}`,
+    'Accept': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest'
   }
 })
 
@@ -152,12 +160,44 @@ const fetchDatasets = async () => {
 // 提交上传表单
 const submitUpload = async () => {
   try {
-    await request.post('/api/preprocessing/datasets/', uploadForm.value)
+    const token = localStorage.getItem('token')
+    if (!token) {
+      ElMessage.error('请先登录')
+      router.push('/login')
+      return
+    }
+    
+    const formData = new FormData()
+    formData.append('name', uploadForm.value.name)
+    formData.append('description', uploadForm.value.description)
+    formData.append('file_type', uploadForm.value.file_type)
+    
+    // 获取上传文件
+    const uploadFiles = upload.value.uploadFiles
+    if (uploadFiles.length === 0) {
+      ElMessage.error('请选择要上传的文件')
+      return
+    }
+    formData.append('file', uploadFiles[0].raw)
+    
+    await request.post('/api/preprocessing/datasets/', formData, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    
     ElMessage.success('数据集创建成功')
     uploadDialogVisible.value = false
     fetchDatasets()
   } catch (error) {
-    ElMessage.error('数据集创建失败')
+    console.error('上传错误:', error)
+    if (error.response?.status === 401) {
+      ElMessage.error('请重新登录')
+      router.push('/login')
+    } else {
+      ElMessage.error('数据集创建失败')
+    }
   }
 }
 

@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'channels',
     'django_celery_beat',
     'apps.authentication',
+    'apps.dashboard',  # 添加这一行
 ]
 
 MIDDLEWARE = [

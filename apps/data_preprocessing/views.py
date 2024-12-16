@@ -10,27 +10,43 @@ from django.db.models import Q
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.exceptions import ValidationError
 
 class DatasetViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     serializer_class = DatasetSerializer
+    parser_classes = [MultiPartParser, FormParser]
     
     def get_queryset(self):
         return Dataset.objects.filter(owner=self.request.user)
 
     def perform_create(self, serializer):
-        dataset = serializer.save(owner=self.request.user)
-        
-        # 读取并分析数据集
-        df = DataPreprocessingService.read_dataset(
-            dataset.file.path,
-            dataset.file_type
-        )
-        info = DataPreprocessingService.get_dataset_info(df)
-        
-        # 更新数据集信息
-        dataset.columns = info['columns']
-        dataset.row_count = info['row_count']
-        dataset.save()
+        try:
+            file_obj = self.request.FILES.get('file')
+            if not file_obj:
+                raise ValidationError('未提供文件')
+                
+            dataset = serializer.save(
+                owner=self.request.user,
+                file=file_obj,
+                file_type=file_obj.name.split('.')[-1].lower()
+            )
+            
+            # 读取并分析数据集
+            df = DataPreprocessingService.read_dataset(
+                dataset.file.path,
+                dataset.file_type
+            )
+            info = DataPreprocessingService.get_dataset_info(df)
+            
+            # 更新数据集信息
+            dataset.columns = info['columns']
+            dataset.row_count = info['row_count']
+            dataset.save()
+            
+            return dataset
+        except Exception as e:
+            raise ValidationError(f'创建数据集失败: {str(e)}')
 
     @action(detail=True, methods=['get'])
     def preview(self, request, pk=None):
