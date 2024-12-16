@@ -18,9 +18,23 @@ const routes = [
         component: () => import('@/views/Dashboard.vue')
       },
       {
-        path: 'data',
+        path: 'data-management',
         name: 'DataManagement',
         component: () => import('@/views/DataManagement.vue')
+      },
+      {
+        path: 'data-preprocessing',
+        name: 'DataPreprocessing',
+        component: () => import('@/views/DataPreprocessing.vue')
+      },
+      {
+        path: 'data-processing',
+        name: 'DataProcessing',
+        component: () => import('@/views/DataProcessing.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '数据处理'
+        }
       },
       {
         path: 'model',

@@ -9,14 +9,34 @@
           <el-icon><Monitor /></el-icon>
           <span>仪表板</span>
         </el-menu-item>
-        <el-menu-item index="/data">
-          <el-icon><Document /></el-icon>
-          <span>数据管理</span>
-        </el-menu-item>
+
+        <el-sub-menu index="/data">
+          <template #title>
+            <el-icon><Document /></el-icon>
+            <span>数据管理</span>
+          </template>
+          
+          <el-menu-item index="/data-management">
+            <el-icon><Folder /></el-icon>
+            <span>数据集管理</span>
+          </el-menu-item>
+          
+          <el-menu-item index="/data-preprocessing">
+            <el-icon><Edit /></el-icon>
+            <span>数据预处理</span>
+          </el-menu-item>
+          
+          <el-menu-item index="/data-processing">
+            <el-icon><Operation /></el-icon>
+            <span>数据处理</span>
+          </el-menu-item>
+        </el-sub-menu>
+
         <el-menu-item index="/model">
           <el-icon><Connection /></el-icon>
           <span>模型编辑器</span>
         </el-menu-item>
+
         <el-menu-item index="/training">
           <el-icon><VideoPlay /></el-icon>
           <span>模型训练</span>
@@ -48,7 +68,15 @@
 </template>
 
 <script setup>
-import { Monitor, Document, Connection, VideoPlay } from '@element-plus/icons-vue'
+import { 
+  Monitor, 
+  Document, 
+  Connection, 
+  VideoPlay,
+  Folder,
+  Edit,
+  Operation 
+} from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { ElMessage } from 'element-plus'
