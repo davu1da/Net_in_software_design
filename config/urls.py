@@ -9,4 +9,5 @@ urlpatterns = [
     path('api/editor/', include('apps.model_editor.urls')),
     path('api/training/', include('apps.model_training.urls')),
     path('api/visualization/', include('apps.visualization.urls')),
+    path('api/auth/', include('apps.authentication.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 

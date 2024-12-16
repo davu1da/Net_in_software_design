@@ -19,23 +19,25 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',  # REST framework
     'corsheaders',    # CORS
-    'apps.data_preprocessing',  # 数据预处理模块
+    'apps.data_preprocessing.apps.DataPreprocessingConfig',  # 确保这行存在
     'apps.model_editor',       # 模型编辑器模块
     'apps.model_training',     # 模型训练模块
     'apps.visualization',      # 数据可视化模块
     'channels',
     'django_celery_beat',
+    'apps.authentication',
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # CORS中间件
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'apps.data_preprocessing.middleware.AuthenticationMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -64,7 +66,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'neural_network_platform',
         'USER': 'root',
-        'PASSWORD': '123456',  # 请��改为你的数据库密码
+        'PASSWORD': '123456',  # 请改为你的数据库密码
         'HOST': 'localhost',
         'PORT': '3306',
     }
@@ -82,8 +84,17 @@ REST_FRAMEWORK = {
 }
 
 # CORS设置
-CORS_ALLOW_ALL_ORIGINS = True  # 仅在开发环境中使用
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # Vite 默认端口
+    "http://127.0.0.1:5173",
+]
+
+# CSRF设置
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
 
 # 静态文件设置
 STATIC_URL = '/static/'
@@ -128,3 +139,12 @@ CELERY_BEAT_SCHEDULE = {
         'args': (30, True),  # 清理30天前的已读通知
     },
 } 
+
+# Session配置
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 1209600  # 两周
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'  # 允许跨站点请求
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = False  # 开发环境设为False
+CSRF_COOKIE_SECURE = False    # 开发环境设为False

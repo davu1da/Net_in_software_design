@@ -9,4 +9,5 @@ router.register(r'templates', views.PreprocessingTemplateViewSet, basename='prep
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('upload/', views.FileUploadView.as_view(), name='file-upload'),
 ] 

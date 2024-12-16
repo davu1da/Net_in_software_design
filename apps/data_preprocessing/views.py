@@ -1,5 +1,5 @@
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, parser_classes
 from rest_framework.response import Response
 from .models import Dataset, PreprocessingStep, ProcessedDataset, PreprocessingTemplate
 from .serializers import (DatasetSerializer, PreprocessingStepSerializer,
@@ -7,6 +7,9 @@ from .serializers import (DatasetSerializer, PreprocessingStepSerializer,
 from .services import DataPreprocessingService
 import pandas as pd
 from django.db.models import Q
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 class DatasetViewSet(viewsets.ModelViewSet):
     serializer_class = DatasetSerializer
@@ -166,3 +169,34 @@ class PreprocessingTemplateViewSet(viewsets.ModelViewSet):
                 {'error': str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             ) 
+
+@parser_classes([MultiPartParser, FormParser])
+class FileUploadView(APIView):
+    permission_classes = [AllowAny]  # 临时允许匿名访问，测试用
+    
+    def post(self, request):
+        try:
+            # 检查用户认证状态
+            if not request.user.is_authenticated:
+                return Response(
+                    {'message': '请先登录'},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+
+            file_obj = request.FILES['file']
+            dataset = Dataset.objects.create(
+                file=file_obj,
+                owner=request.user,
+                name=file_obj.name,
+                file_type=file_obj.name.split('.')[-1].lower()
+            )
+            
+            return Response({
+                'message': '文件上传成功',
+                'dataset': DatasetSerializer(dataset).data
+            })
+        except Exception as e:
+            return Response(
+                {'message': f'文件上传失败: {str(e)}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )

@@ -45,10 +45,12 @@
         </el-form-item>
         <el-form-item label="数据文件">
           <el-upload
-            action="/api/preprocessing/upload/"
+            :action="`${baseURL}/api/preprocessing/upload/`"
+            :headers="uploadHeaders"
+            :with-credentials="true"
             :on-success="handleUploadSuccess"
             :on-error="handleUploadError"
-            :before-upload="file => uploadForm.file = file">
+            :before-upload="beforeUpload">
             <el-button>选择文件</el-button>
           </el-upload>
         </el-form-item>
@@ -73,9 +75,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
+import { useRouter } from 'vue-router'
+
+const baseURL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000'
+const router = useRouter()
 
 // 状态变量
 const datasets = ref([])
@@ -90,6 +96,45 @@ const uploadForm = ref({
   file_type: 'csv'
 })
 
+// 获取CSRF Token
+const getCsrfToken = () => {
+  return document.cookie.match(/csrftoken=([\w-]+)/)?.[1] || ''
+}
+
+// 上传请求头
+const uploadHeaders = computed(() => ({
+  'X-CSRFToken': getCsrfToken(),
+  'Authorization': `Bearer ${localStorage.getItem('token')}`
+}))
+
+// 上传前检查
+const beforeUpload = (file) => {
+  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'
+  if (!isAuthenticated) {
+    ElMessage.error('请先登录')
+    router.push('/login')
+    return false
+  }
+  return true
+}
+
+// 处理上传成功
+const handleUploadSuccess = (response) => {
+  ElMessage.success('文件上传成功')
+  // 刷新数据集列表
+  fetchDatasets()
+}
+
+// 处理上传失败
+const handleUploadError = (error) => {
+  console.error('上传错误:', error)
+  if (error.response?.status === 401) {
+    ElMessage.error('请先登录')
+  } else {
+    ElMessage.error(error.response?.data?.message || '文件上传失败')
+  }
+}
+
 // 获取数据集列表
 const fetchDatasets = async () => {
   try {
@@ -98,16 +143,6 @@ const fetchDatasets = async () => {
   } catch (error) {
     ElMessage.error('获取数据集列表失败')
   }
-}
-
-// 处理文件上传成功
-const handleUploadSuccess = () => {
-  ElMessage.success('文件上传成功')
-}
-
-// 处理文件上传失败
-const handleUploadError = () => {
-  ElMessage.error('文件上传失败')
 }
 
 // 提交上传表单
