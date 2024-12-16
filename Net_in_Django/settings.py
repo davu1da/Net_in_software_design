@@ -43,6 +43,9 @@ INSTALLED_APPS = [
     'apps.data_preprocessing',
     'apps.model_editor',
     'apps.model_training',
+    'apps.visualization',
+    'apps.dashboard',
+    'apps.notifications',
     'rest_framework_simplejwt',
 ]
 
@@ -136,24 +139,30 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS configuration
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_METHODS = [
-    'DELETE',
-    'GET',
-    'OPTIONS',
-    'PATCH',
-    'POST',
-    'PUT',
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
 ]
 
 # REST Framework configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
     ],
-    'EXCEPTION_HANDLER': 'apps.core.utils.custom_exception_handler'
 }
 
 # JWT Settings
@@ -164,7 +173,7 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'ALGORITHM': 'HS256',
     'AUTH_HEADER_TYPES': ('Bearer',),
-    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    'AUTH_HEADER_NAME': 'Authorization',
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
 }

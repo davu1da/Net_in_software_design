@@ -68,7 +68,13 @@ class DeployedModel(models.Model):
     name = models.CharField(max_length=200, verbose_name="部署名称")
     description = models.TextField(blank=True, verbose_name="描述")
     session = models.ForeignKey(TrainingSession, on_delete=models.CASCADE, verbose_name="训练会话")
-    checkpoint = models.ForeignKey(ModelCheckpoint, on_delete=models.CASCADE, verbose_name="使用的检查点")
+    checkpoint = models.ForeignKey(
+        ModelCheckpoint, 
+        on_delete=models.CASCADE, 
+        verbose_name="使用的检查点",
+        null=True,
+        blank=True
+    )
     endpoint_url = models.URLField(verbose_name="服务端点URL")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='inactive', verbose_name="状态")
     config = models.JSONField(verbose_name="部署配置")

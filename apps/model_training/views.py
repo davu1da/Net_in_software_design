@@ -11,7 +11,10 @@ from .serializers import (TrainingSessionSerializer, TrainingLogSerializer,
 class TrainingSessionViewSet(viewsets.ModelViewSet):
     """训练会话视图集"""
     serializer_class = TrainingSessionSerializer
-    queryset = TrainingSession.objects.all()
+    
+    def get_queryset(self):
+        """确保只返回当前用户的训练会话"""
+        return TrainingSession.objects.filter(owner=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
@@ -80,6 +83,13 @@ class TrainingSessionViewSet(viewsets.ModelViewSet):
         """停止训练进程"""
         # 实现停止训练的逻辑
         pass
+
+    @action(detail=False, methods=['get'])
+    def recent(self, request):
+        """获取最近的训练会话"""
+        recent_sessions = self.get_queryset().order_by('-created_at')[:5]
+        serializer = self.get_serializer(recent_sessions, many=True)
+        return Response(serializer.data)
 
 class TrainingLogViewSet(viewsets.ModelViewSet):
     """训练日志视图集"""

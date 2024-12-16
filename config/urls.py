@@ -10,4 +10,6 @@ urlpatterns = [
     path('api/training/', include('apps.model_training.urls')),
     path('api/visualization/', include('apps.visualization.urls')),
     path('api/auth/', include('apps.authentication.urls')),
+    path('api/dashboard/', include('apps.dashboard.urls')),
+    path('api/notifications/', include('apps.notifications.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 
