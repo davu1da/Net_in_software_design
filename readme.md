@@ -64,8 +64,7 @@
 
 ### 1. 克隆项目
 ```bash
-git clone [项目地址]
-cd [项目目录]
+git clone [https://github.com/davu1da/Net_in_software_design/tree/master]
 ```
 
 ### 2. 后端设置
